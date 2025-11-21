@@ -1,0 +1,58 @@
+sequenceDiagram
+    participant Client
+    participant Library
+    participant DateUtils
+    participant User
+    participant LibraryItem
+    participant BorrowRecord
+    Client->>+Library: borrowMultipleItems(user, itemsList, borrowDays)
+    activate Client
+    loop For each item in itemsList
+        Library->>+LibraryItem: isAvailable()
+        LibraryItem-->>-Library: availability status
+        opt Item is available
+            Library->>+User: getBorrowedItemsCount()
+            User-->>-Library: current count
+            Library->>+User: getMaxBorrowLimit()
+            User-->>-Library: max limit
+            opt User under borrow limit
+                Library->>+User: getUserId()
+                User-->>-Library: user id
+                Library->>+LibraryItem: getId()
+                LibraryItem-->>-Library: id
+                Library->>+DateUtils: addDays(borrowDate, borrowDays)
+                DateUtils-->>-Library: dueDate
+                Library->>+Library: borrowItem(user, item, recordId, borrowDate, dueDate)
+                Library->>+User: borrowItem(item)
+                User->>+User: getMaxBorrowLimit()
+                User-->>-User: 
+                alt Borrowed items reached limit
+                    User-->>Library: false
+                else Borrowed items under limit
+                    User->>+LibraryItem: isAvailable()
+                    LibraryItem-->>-User: availability status
+                    alt Item not available
+                        User-->>Library: false
+                    else Item available
+
+                        User->>+LibraryItem: borrowItem()
+                        alt Item not available
+                            LibraryItem-->>User: exception
+                            User-->>Library: false
+                        else Item available
+                            deactivate LibraryItem
+                            User-->>-Library: true
+                        end
+                    end
+                end
+
+                alt Borrowed successfully
+                    Library-->Library: true
+                else Not borrowed successfully
+                    Library-->-Library: false
+                end
+            end
+        end
+    end
+    Library-->>-Client: 
+    deactivate Client

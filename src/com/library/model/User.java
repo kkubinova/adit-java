@@ -58,9 +58,14 @@ public abstract class User {
         if (!item.isAvailable()) {
             return false;
         }
+        try {
         item.borrowItem();
         borrowedItems.add(item);
         return true;
+    }
+        catch(IllegalStateException e) {
+            return false;
+        }
     }
 
     public boolean returnItem(LibraryItem item) {

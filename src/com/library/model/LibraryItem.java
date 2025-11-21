@@ -54,10 +54,16 @@ public abstract class LibraryItem {
     public abstract String getItemType();
 
     public void borrowItem() {
+        if (!this.isAvailable) {
+            throw new IllegalStateException("Item is not available for borrowing: " + id);
+        }
         this.isAvailable = false;
     }
 
     public void returnItem() {
+        if (this.isAvailable) {
+            throw new IllegalStateException("Item is already returned: " + id);
+        }
         this.isAvailable = true;
     }
 

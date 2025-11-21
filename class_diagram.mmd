@@ -1,0 +1,206 @@
+classDiagram
+    %% Main Application
+    class LibraryApp {
+        +main(String[] args) void
+    }
+
+    %% Abstract LibraryItem
+    class LibraryItem {
+        <<abstract>>
+        -id: String
+        -title: String
+        -publicationYear: int
+        -isAvailable: boolean
+        +LibraryItem(String, String, int)
+        +getId() String
+        +setId(String) void
+        +getTitle() String
+        +setTitle(String) void
+        +getPublicationYear() int
+        +setPublicationYear(int) void
+        +isAvailable() boolean
+        #setAvailable(boolean) void
+        +getItemType()* String
+        +borrowItem() void
+        +returnItem() void
+        +toString() String
+        +equals(Object) boolean
+        +hashCode() int
+    }
+
+    %% Book extends LibraryItem
+    class Book {
+        -author: String
+        -isbn: String
+        -numberOfPages: int
+        +Book(String, String, int, String, String, int)
+        +getAuthor() String
+        +setAuthor(String) void
+        +getIsbn() String
+        +setIsbn(String) void
+        +getNumberOfPages() int
+        +setNumberOfPages(int) void
+        +getItemType() String
+        +getBookInfo() String
+        +chainStep5() String
+        +toString() String
+    }
+
+    %% Magazine extends LibraryItem
+    class Magazine {
+        -issueNumber: int
+        -publisher: String
+        +Magazine(String, String, int, int, String)
+        +getIssueNumber() int
+        +setIssueNumber(int) void
+        +getPublisher() String
+        +setPublisher(String) void
+        +getItemType() String
+        +getMagazineInfo() String
+        +chainStep5() String
+        +toString() String
+    }
+
+    %% Abstract User
+    class User {
+        <<abstract>>
+        -userId: String
+        -name: String
+        -email: String
+        -borrowedItems: List~LibraryItem~
+        +User(String, String, String)
+        +getUserId() String
+        +setUserId(String) void
+        +getName() String
+        +setName(String) void
+        +getEmail() String
+        +setEmail(String) void
+        +getBorrowedItems() List~LibraryItem~
+        +getMaxBorrowLimit()* int
+        +borrowItem(LibraryItem) boolean
+        +returnItem(LibraryItem) boolean
+        +getBorrowedItemsCount() int
+        +renewItem(LibraryItem, int) boolean
+        +chainStep3(LibraryItem) String
+        +toString() String
+    }
+
+    %% Student extends User
+    class Student {
+        -studentId: String
+        +Student(String, String, String, String)
+        +getStudentId() String
+        +setStudentId(String) void
+        +getMaxBorrowLimit() int
+        +chainStep4(LibraryItem) String
+        +toString() String
+    }
+
+    %% Professor extends User
+    class Professor {
+        -department: String
+        +Professor(String, String, String, String)
+        +getDepartment() String
+        +setDepartment(String) void
+        +getMaxBorrowLimit() int
+        +chainStep4(LibraryItem) String
+        +toString() String
+    }
+
+    %% BorrowRecord
+    class BorrowRecord {
+        -recordId: String
+        -user: User
+        -item: LibraryItem
+        -borrowDate: LocalDate
+        -dueDate: LocalDate
+        -returnDate: LocalDate
+        +LATE_FEE_PER_DAY double
+        +BorrowRecord(String, User, LibraryItem, LocalDate, LocalDate)
+        +getRecordId() String
+        +getUser() User
+        +getItem() LibraryItem
+        +getBorrowDate() LocalDate
+        +getDueDate() LocalDate
+        +getReturnDate() LocalDate
+        +isOverdue() boolean
+        +calculateLateFee() double
+        +markAsReturned() void
+        +sendOverdueNotification() String
+        +chainStep6(LibraryItem)$ String
+        +toString() String
+    }
+
+    %% Library
+    class Library {
+        -name: String
+        -items: List~LibraryItem~
+        -users: List~User~
+        -borrowRecords: List~BorrowRecord~
+        +Library(String)
+        +getName() String
+        +getItems() List~LibraryItem~
+        +getUsers() List~User~
+        +getBorrowRecords() List~BorrowRecord~
+        +addItem(LibraryItem) void
+        +addUser(User) void
+        +borrowItem(User, LibraryItem, String, LocalDate, LocalDate) boolean
+        +returnItem(User, LibraryItem) boolean
+        +getAvailableItems() List~LibraryItem~
+        +getOverdueRecords() List~BorrowRecord~
+        +borrowMultipleItems(User, List~LibraryItem~, int) List~String~
+        +processOverdueItems() Map~User, Double~
+        +findItemsByTitle(String) List~LibraryItem~
+        +chainCallStart(User, LibraryItem) String
+        +toString() String
+    }
+
+    %% LibraryStatistics
+    class LibraryStatistics {
+        -library: Library
+        +LibraryStatistics(Library)
+        +getTotalBooks() int
+        +getTotalMagazines() int
+        +getMostActiveUser() User
+        +getAverageBorrowsPerUser() double
+        +generateUserReport(User) String
+        +generateDetailedLibraryReport() String
+        +chainStep2(User, LibraryItem) String
+        +toString() String
+    }
+
+    %% DateUtils (final utility class)
+    class DateUtils {
+        <<final>>
+        +addDays(LocalDate, int)$ LocalDate
+        +daysBetween(LocalDate, LocalDate)$ long
+        +isOverdue(LocalDate)$ boolean
+        +chainStep7(String)$ String
+    }
+
+    %% Inheritance Relationships
+    Book --|> LibraryItem
+    Magazine --|> LibraryItem
+    Student --|> User
+    Professor --|> User
+
+    %% Composition Relationships (filled diamond)
+    Library *-- LibraryItem : contains
+    Library *-- User : manages
+    Library *-- BorrowRecord : tracks
+    User *-- LibraryItem : borrowedItems
+
+    %% Association Relationships (open diamond)
+    BorrowRecord o-- User : borrower
+    BorrowRecord o-- LibraryItem : borrowed
+    LibraryStatistics o-- Library : analyzes
+
+    %% Dependency Relationships (dashed arrow)
+    LibraryApp ..> Library : uses
+    LibraryApp ..> Book : creates
+    LibraryApp ..> Magazine : creates
+    LibraryApp ..> Student : creates
+    LibraryApp ..> Professor : creates
+    Library ..> DateUtils : uses
+    BorrowRecord ..> DateUtils : uses
+    LibraryStatistics ..> DateUtils : uses

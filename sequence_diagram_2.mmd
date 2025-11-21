@@ -1,0 +1,80 @@
+sequenceDiagram
+    participant Caller
+    participant Library
+    participant LibraryStatistics
+    participant User
+    participant Student
+    participant Professor
+    participant Book
+    participant Magazine
+    participant BorrowRecord
+
+    Caller->>Library: chainCallStart(user, item)
+    activate Caller
+    activate Library
+    Library->>+LibraryStatistics: chainStep2(user, item)
+    LibraryStatistics->>User: chainStep3(item)
+    activate User
+    
+    alt user instanceof Student
+        User->>Student: chainStep4(item)
+        activate Student
+        
+        alt item instanceof Book
+            Student->>Book: chainStep5()
+            activate Book
+            Book->>BorrowRecord: chainStep6(this)
+            activate BorrowRecord
+            BorrowRecord-->>Book: result
+            deactivate BorrowRecord
+            Book-->>Student: result
+            deactivate Book
+        else item instanceof Magazine
+            Student->>Magazine: chainStep5()
+            activate Magazine
+            Magazine->>BorrowRecord: chainStep6(this)
+            activate BorrowRecord
+            BorrowRecord-->>Magazine: result
+            deactivate BorrowRecord
+            Magazine-->>Student: result
+            deactivate Magazine
+        end
+        
+        Student-->>User: result
+        deactivate Student
+        
+    else user instanceof Professor
+        User->>Professor: chainStep4(item)
+        activate Professor
+        
+        alt item instanceof Book
+            Professor->>Book: chainStep5()
+            activate Book
+            Book->>BorrowRecord: chainStep6(this)
+            activate BorrowRecord
+            BorrowRecord-->>Book: result
+            deactivate BorrowRecord
+            Book-->>Professor: result
+            deactivate Book
+        else item instanceof Magazine
+            Professor->>Magazine: chainStep5()
+            activate Magazine
+            Magazine->>BorrowRecord: chainStep6(this)
+            activate BorrowRecord
+            BorrowRecord-->>Magazine: result
+            deactivate BorrowRecord
+            Magazine-->>Professor: result
+            deactivate Magazine
+        end
+        
+        Professor-->>User: result
+        deactivate Professor
+    end
+    
+    User-->>LibraryStatistics: result
+    deactivate User
+    LibraryStatistics-->>Library: result
+    deactivate LibraryStatistics
+    Library-->>Caller: result
+    deactivate Library
+    deactivate Caller
